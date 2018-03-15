@@ -1,0 +1,8 @@
+# Tomcat settings
+server:
+    port: 8080
+
+# Spring settings
+spring:
+    profiles:
+        active: dev
