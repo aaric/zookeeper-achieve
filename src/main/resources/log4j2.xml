@@ -9,7 +9,7 @@
         </File>
     </Appenders>
     <Loggers>
-        <Logger name="cn.com.gmmc.monitor" level="DEBUG"/>
+        <Logger name="com.github.aaric" level="DEBUG"/>
         <Root level="INFO">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="LogFile"/>

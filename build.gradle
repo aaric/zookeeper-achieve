@@ -1,5 +1,5 @@
 group 'com.github.aaric'
-version '1.0-SNAPSHOT'
+version '0.0.2-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -19,6 +19,7 @@ dependencies {
 
     compile("org.apache.commons:commons-lang3:3.+")
     compile("org.apache.zookeeper:zookeeper:3.4.10")
+    compile("com.101tec:zkclient:0.10")
 
     compile("org.springframework.boot:spring-boot-starter:1.5.+")
     compile("org.springframework.boot:spring-boot-starter-log4j2:1.5.+")
