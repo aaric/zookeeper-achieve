@@ -1,12 +1,16 @@
 package com.github.aaric.zookeeper.model;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import java.io.Serializable;
+
 /**
  * 用户信息
  *
  * @author Aaric, created on 2018-03-19T17:14.
  * @since 0.0.1-SNAPSHOT
  */
-public class UserInfo {
+public class UserInfo implements Serializable {
 
     private String account;
     private String password;
@@ -33,5 +37,10 @@ public class UserInfo {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
     }
 }

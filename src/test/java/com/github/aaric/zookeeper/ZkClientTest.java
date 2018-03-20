@@ -3,6 +3,7 @@ package com.github.aaric.zookeeper;
 import com.github.aaric.zookeeper.listener.ZkCustomChildListener;
 import com.github.aaric.zookeeper.model.UserInfo;
 import org.I0Itec.zkclient.ZkClient;
+import org.apache.zookeeper.CreateMode;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,9 +55,22 @@ public class ZkClientTest {
     }
 
     @Test
-    public void testGetOrUpdate() {
-        // http://blog.csdn.net/u012562943/article/details/52963506
-        UserInfo userInfo = zkClient.readData(ZK_TEST_PATH + "/person", true);
+    public void testReadData() {
+        // path
+        String path = ZK_TEST_PATH + "/person";
+
+        // create
+        zkClient.create(path, new UserInfo("zhangshan", "111111"), CreateMode.EPHEMERAL);
+
+        // readData
+        UserInfo userInfo = zkClient.readData(path, true);
+        System.out.println(userInfo);
+
+        // update
+        zkClient.writeData(path, new UserInfo("lisi", "222222"));
+
+        // readData
+        userInfo = zkClient.readData(path, true);
         System.out.println(userInfo);
     }
 }
