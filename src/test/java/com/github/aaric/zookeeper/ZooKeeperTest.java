@@ -9,6 +9,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * ZooKeeperTest
@@ -18,11 +19,15 @@ import java.util.concurrent.CountDownLatch;
  */
 public class ZooKeeperTest {
 
+    private static final int ZK_SESSION_TIMEOUT = 30000;
+
+    private static final String ZK_TEST_PATH = "/rooster/test";
+
     private ZooKeeper connectZooKeeper() {
         ZooKeeper zooKeeper = null;
         CountDownLatch countDownLatch = new CountDownLatch(1);
         try {
-            zooKeeper = new ZooKeeper("192.168.56.101:2181", 30000, new Watcher() {
+            zooKeeper = new ZooKeeper("192.168.56.101:2181", ZK_SESSION_TIMEOUT, new Watcher() {
                 @Override
                 public void process(WatchedEvent event) {
                     if (Event.KeeperState.SyncConnected == event.getState()) {
@@ -30,7 +35,7 @@ public class ZooKeeperTest {
                     }
                 }
             });
-            countDownLatch.await();
+            countDownLatch.await(ZK_SESSION_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -46,7 +51,7 @@ public class ZooKeeperTest {
     @Test
     public void testGetChildren() throws KeeperException, InterruptedException {
         ZooKeeper zk = connectZooKeeper();
-        List<String> paths = zk.getChildren("/rooster/test", true);
+        List<String> paths = zk.getChildren(ZK_TEST_PATH, true);
         System.out.println(paths);
     }
 }
