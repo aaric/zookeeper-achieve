@@ -21,7 +21,7 @@ public class ZooKeeperTest {
 
     private static final int ZK_SESSION_TIMEOUT = 30000;
 
-    private static final String ZK_TEST_PATH = "/rooster/test";
+    private static final String ZK_PATH_TEST = "/rooster/test";
 
     private ZooKeeper connectZooKeeper() {
         ZooKeeper zooKeeper = null;
@@ -43,15 +43,17 @@ public class ZooKeeperTest {
     }
 
     @Test
-    public void testConnect() {
+    public void testConnect() throws InterruptedException {
         ZooKeeper zk = connectZooKeeper();
         System.out.println(zk);
+        zk.close();
     }
 
     @Test
     public void testGetChildren() throws KeeperException, InterruptedException {
         ZooKeeper zk = connectZooKeeper();
-        List<String> paths = zk.getChildren(ZK_TEST_PATH, true);
+        List<String> paths = zk.getChildren(ZK_PATH_TEST, false);
         System.out.println(paths);
+        zk.close();
     }
 }

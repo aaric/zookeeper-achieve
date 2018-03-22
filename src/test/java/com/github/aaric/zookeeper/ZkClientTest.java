@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 //@RunWith(SpringRunner.class)
 public class ZkClientTest {
 
-    private static final String ZK_TEST_PATH = "/rooster/test";
+    private static final String ZK_PATH_TEST = "/rooster/test";
 
     @Autowired
     private ZkClient zkClient;
@@ -35,21 +35,21 @@ public class ZkClientTest {
 
     @Test
     public void testCreate() {
-        zkClient.createPersistent(ZK_TEST_PATH, true);
-        System.out.println(zkClient.getChildren(ZK_TEST_PATH.substring(0, ZK_TEST_PATH.lastIndexOf("/"))));
+        zkClient.createPersistent(ZK_PATH_TEST, true);
+        System.out.println(zkClient.getChildren(ZK_PATH_TEST.substring(0, ZK_PATH_TEST.lastIndexOf("/"))));
     }
 
     @Test
     public void testDelete() {
-        //zkClient.delete(ZK_TEST_PATH);
+        //zkClient.delete(ZK_PATH_TEST);
         zkClient.deleteRecursive("/rooster");
     }
 
     @Test
     public void testSubscribe() throws InterruptedException {
-        zkClient.subscribeChildChanges(ZK_TEST_PATH, new ZkCustomChildListener());
+        zkClient.subscribeChildChanges(ZK_PATH_TEST, new ZkCustomChildListener());
         for (int i = 1; i <= 5; i++) {
-            zkClient.createPersistent(ZK_TEST_PATH + "/" + "node" + i);
+            zkClient.createPersistent(ZK_PATH_TEST + "/" + "node" + i);
             Thread.sleep(1000);
         }
     }
@@ -57,7 +57,7 @@ public class ZkClientTest {
     @Test
     public void testReadData() {
         // path
-        String path = ZK_TEST_PATH + "/person";
+        String path = ZK_PATH_TEST + "/person";
 
         // create
         zkClient.create(path, new UserInfo("zhangshan", "111111"), CreateMode.EPHEMERAL);
