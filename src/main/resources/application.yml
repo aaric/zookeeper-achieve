@@ -6,3 +6,9 @@ server:
 spring:
     profiles:
         active: dev
+
+# Rooster settings
+rooster:
+    zookeeper:
+        quorum: 127.0.0.1
+        clientPort: 2181
