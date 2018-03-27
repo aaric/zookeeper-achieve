@@ -15,23 +15,23 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * 单节点转存策略
+ * 分布式转存策略
  *
  * @author Aaric, created on 2018-03-26T17:59.
  * @since 0.0.1-SNAPSHOT
  */
-public class SingleTransferStrategy implements TransferStrategy {
+public class DistributedTransferStrategy implements TransferStrategy {
 
     /**
      * Logger
      */
-    private static final Logger logger = LoggerFactory.getLogger(SingleTransferStrategy.class);
+    private static final Logger logger = LoggerFactory.getLogger(DistributedTransferStrategy.class);
 
     /**
      * transfer服务器信息
      */
-    private static int SERVER_SEQ;
-    private static boolean SERVER_ACTIVE;
+    public static int SERVER_SEQ = -1;
+    public static boolean SERVER_ACTIVE = false;
 
     /**
      * 定义zk目录

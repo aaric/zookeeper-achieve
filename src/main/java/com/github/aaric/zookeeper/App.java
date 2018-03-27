@@ -1,6 +1,6 @@
 package com.github.aaric.zookeeper;
 
-import com.github.aaric.zookeeper.strategy.SingleTransferStrategy;
+import com.github.aaric.zookeeper.strategy.DistributedTransferStrategy;
 import com.github.aaric.zookeeper.strategy.TransferStrategy;
 import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
@@ -36,12 +36,14 @@ public class App implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        // 启动日志
         logger.info("App start...");
 
-        // 执行策略
-        TransferStrategy transferStrategy = new SingleTransferStrategy();
+        // 执行分布式策略
+        TransferStrategy transferStrategy = new DistributedTransferStrategy();
         transferStrategy.execute(zooKeeper);
 
+        // 关闭日志
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             logger.info("App stopped...");
         }));
