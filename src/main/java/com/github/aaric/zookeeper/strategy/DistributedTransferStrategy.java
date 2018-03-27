@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +38,7 @@ public class DistributedTransferStrategy implements TransferStrategy {
      * 定义zk目录
      */
     private static final String ZK_PATH_ZD = "/rooster/transfer/zd";
-    private static final String ZK_PATH_ZD_NEXT = ZK_PATH_ZD + "/next";
+    public static final String ZK_PATH_ZD_NEXT = ZK_PATH_ZD + "/next";
     private static final String ZK_PATH_ZD_NODE_LIST = ZK_PATH_ZD + "/node_list";
     private static final String ZK_PATH_NODE_SERVER = "server";
     private static final String ZK_PATH_FULL_NODE_SERVER = ZK_PATH_ZD_NODE_LIST + "/" + ZK_PATH_NODE_SERVER;
@@ -73,6 +74,18 @@ public class DistributedTransferStrategy implements TransferStrategy {
         } else {
             SERVER_ACTIVE = false;
         }
+
+        // 4.初始化next节点数据
+        if (null == zkClient.exists(ZK_PATH_ZD_NEXT, false)) {
+            String content = "0";
+            zkClient.create(ZK_PATH_ZD_NEXT, content.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+            logger.info("Init zk Node('next') Data: {}", content);
+        } else {
+            String content = new String(zkClient.getData(ZK_PATH_ZD_NEXT, false, new Stat()));
+            logger.info("Usage zk Node('next') Prev Data: {}", content);
+        }
+
+        // 5.监控node_list节点状态
 
         // x.打印结果
         System.err.println("-----result-----");
