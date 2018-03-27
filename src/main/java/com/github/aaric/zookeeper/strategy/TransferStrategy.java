@@ -11,9 +11,15 @@ import org.apache.zookeeper.ZooKeeper;
 public interface TransferStrategy {
 
     /**
-     * 执行策略
+     * 设置zk客户端
      *
      * @param zkClient zk客户端
+     * @throws Exception
      */
-    void execute(ZooKeeper zkClient) throws Exception;
+    void setZkClient(ZooKeeper zkClient) throws Exception;
+
+    /**
+     * 执行策略
+     */
+    void execute() throws Exception;
 }

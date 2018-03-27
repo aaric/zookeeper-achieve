@@ -37,7 +37,7 @@ public class QuartzConfiguration {
     /**
      * 定时任务
      */
-    @Scheduled(cron = "0/1 * * * * ?")
+    @Scheduled(cron = "0/5 * * * * ?")
     public void doTask() {
         try {
             if (DistributedTransferStrategy.SERVER_ACTIVE) {
@@ -53,7 +53,7 @@ public class QuartzConfiguration {
                 }
             } else {
                 // 汇报一次自己的Active状态
-                logger.info("Server SEQ-{}: active: {}", DistributedTransferStrategy.SERVER_SEQ, DistributedTransferStrategy.SERVER_ACTIVE);
+                logger.info("Server SEQ-{}: {}", DistributedTransferStrategy.SERVER_SEQ, DistributedTransferStrategy.SERVER_ACTIVE);
             }
 
         } catch (Exception e) {

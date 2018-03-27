@@ -41,7 +41,8 @@ public class App implements CommandLineRunner {
 
         // 执行分布式策略
         TransferStrategy transferStrategy = new DistributedTransferStrategy();
-        transferStrategy.execute(zooKeeper);
+        transferStrategy.setZkClient(zooKeeper);
+        transferStrategy.execute();
 
         // 关闭日志
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

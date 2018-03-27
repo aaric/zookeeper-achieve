@@ -43,8 +43,18 @@ public class DistributedTransferStrategy implements TransferStrategy {
     private static final String ZK_PATH_NODE_SERVER = "server";
     private static final String ZK_PATH_FULL_NODE_SERVER = ZK_PATH_ZD_NODE_LIST + "/" + ZK_PATH_NODE_SERVER;
 
+    /**
+     * zk客户端
+     */
+    private ZooKeeper zkClient;
+
     @Override
-    public void execute(ZooKeeper zkClient) throws Exception {
+    public void setZkClient(ZooKeeper zkClient) throws Exception {
+        this.zkClient = zkClient;
+    }
+
+    @Override
+    public void execute() throws Exception {
         // 1.创建转存器zk工作目录
         String[] zkWorkPaths = ZK_PATH_ZD_NODE_LIST.split("/");
         for (int i = 2; i <= zkWorkPaths.length; i++) {
@@ -63,17 +73,7 @@ public class DistributedTransferStrategy implements TransferStrategy {
         logger.info("My Server SEQ: {}", SERVER_SEQ);
 
         // 3.查询最小节点，如果是自己，则设置状态为"active"
-        Integer zkServerSEQ = null;
-        List<String> zkNodePaths = zkClient.getChildren(ZK_PATH_ZD_NODE_LIST, false);
-        Collections.sort(zkNodePaths); //排序
-        int minServerSEQ = Integer.parseInt(zkNodePaths.get(0).replace(ZK_PATH_NODE_SERVER, ""));
-        logger.info("Min Server SEQ: {}", minServerSEQ);
-        if (SERVER_SEQ <= minServerSEQ) {
-            // 如果本地SEQ最小，则激活状态"active"
-            SERVER_ACTIVE = true;
-        } else {
-            SERVER_ACTIVE = false;
-        }
+        queryAndCheckActive();
 
         // 4.初始化next节点数据
         if (null == zkClient.exists(ZK_PATH_ZD_NEXT, false)) {
@@ -86,10 +86,41 @@ public class DistributedTransferStrategy implements TransferStrategy {
         }
 
         // 5.监控node_list节点状态
+        zkClient.getChildren(ZK_PATH_ZD_NODE_LIST, (event) -> {
+            try {
+                // 查询最小节点，如果是自己，则设置状态为"active"
+                queryAndCheckActive();
 
-        // x.打印结果
+                // 打印结果
+                System.err.println("-----result-----");
+                System.err.println(SERVER_SEQ);
+                System.err.println(SERVER_ACTIVE);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        // 6.打印结果
         System.err.println("-----result-----");
         System.err.println(SERVER_SEQ);
         System.err.println(SERVER_ACTIVE);
+    }
+
+    /**
+     * 查询最小节点，如果是自己，则设置状态为"active"
+     *
+     * @throws Exception
+     */
+    public void queryAndCheckActive() throws Exception {
+        List<String> zkNodePaths = zkClient.getChildren(ZK_PATH_ZD_NODE_LIST, false);
+        Collections.sort(zkNodePaths); //排序
+        int minServerSEQ = Integer.parseInt(zkNodePaths.get(0).replace(ZK_PATH_NODE_SERVER, ""));
+        logger.info("Min Server SEQ: {}", minServerSEQ);
+        if (SERVER_SEQ <= minServerSEQ) {
+            // 如果本地SEQ最小，则激活状态"active"
+            SERVER_ACTIVE = true;
+        } else {
+            SERVER_ACTIVE = false;
+        }
     }
 }
