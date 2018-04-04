@@ -4,9 +4,11 @@ import com.github.aaric.zookeeper.listener.ZkCustomChildListener;
 import com.github.aaric.zookeeper.model.UserInfo;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.zookeeper.CreateMode;
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * ZkClientTest
@@ -14,19 +16,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Aaric, created on 2018-03-19T16:13.
  * @since 0.0.2-SNAPSHOT
  */
-//@SpringBootTest
-//@RunWith(SpringRunner.class)
+@SpringBootTest
+@RunWith(SpringRunner.class)
 public class ZkClientTest {
 
     private static final String ZK_PATH_TEST = "/rooster/test";
 
     @Autowired
     private ZkClient zkClient;
-
-    @Before
-    public void begin() {
-        zkClient = new ZkClient("192.168.56.101:2181", 5000);
-    }
 
     @Test
     public void testConnection() {

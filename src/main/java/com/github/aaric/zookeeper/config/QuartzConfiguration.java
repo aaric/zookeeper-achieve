@@ -37,7 +37,7 @@ public class QuartzConfiguration {
     /**
      * 定时任务
      */
-    @Scheduled(cron = "0/5 * * * * ?")
+//    @Scheduled(cron = "0/5 * * * * ?")
     public void doTask() {
         try {
             if (DistributedTransferStrategy.SERVER_ACTIVE) {

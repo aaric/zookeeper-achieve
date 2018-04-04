@@ -77,20 +77,20 @@ public class ZooKeeperConfiguration {
             logger.info("Connection Zookeeper failure...", e);
         }
 
-        // 关闭zk连接
-        Runtime.getRuntime().addShutdownHook(new ZooKeeperShutdownThread(zooKeeper));
+        // 程序关闭时主动断开zk连接
+        Runtime.getRuntime().addShutdownHook(new ZooKeeperCloseThread(zooKeeper));
 
         return zooKeeper;
     }
 
     /**
-     * 关闭zk线程类型
+     * 关闭zk连接线程类
      */
-    private static class ZooKeeperShutdownThread extends Thread {
+    private static class ZooKeeperCloseThread extends Thread {
 
         private ZooKeeper zooKeeper;
 
-        public ZooKeeperShutdownThread(ZooKeeper zooKeeper) {
+        public ZooKeeperCloseThread(ZooKeeper zooKeeper) {
             this.zooKeeper = zooKeeper;
         }
 
