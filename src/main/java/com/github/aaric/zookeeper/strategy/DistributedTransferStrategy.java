@@ -48,8 +48,13 @@ public class DistributedTransferStrategy implements TransferStrategy {
      */
     private ZooKeeper zkClient;
 
-    @Override
-    public void setZkClient(ZooKeeper zkClient) throws Exception {
+    /**
+     * 默认构造函数
+     *
+     * @param zkClient zk客户端
+     * @throws Exception
+     */
+    public DistributedTransferStrategy(ZooKeeper zkClient) throws Exception {
         this.zkClient = zkClient;
     }
 

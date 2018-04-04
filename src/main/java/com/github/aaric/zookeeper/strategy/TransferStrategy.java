@@ -1,7 +1,5 @@
 package com.github.aaric.zookeeper.strategy;
 
-import org.apache.zookeeper.ZooKeeper;
-
 /**
  * 转存策略
  *
@@ -9,14 +7,6 @@ import org.apache.zookeeper.ZooKeeper;
  * @since 0.0.1-SNAPSHOT
  */
 public interface TransferStrategy {
-
-    /**
-     * 设置zk客户端
-     *
-     * @param zkClient zk客户端
-     * @throws Exception
-     */
-    void setZkClient(ZooKeeper zkClient) throws Exception;
 
     /**
      * 执行策略
