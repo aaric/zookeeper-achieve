@@ -1,4 +1,4 @@
-package com.github.aaric.zookeeper;
+package com.github.aaric.zookeeper.strategy;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.CreateMode;
