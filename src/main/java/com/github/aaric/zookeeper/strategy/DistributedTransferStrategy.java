@@ -49,7 +49,7 @@ public class DistributedTransferStrategy implements TransferStrategy {
     private ZooKeeper zkClient;
 
     /**
-     * 默认构造函数
+     * 构造函数
      *
      * @param zkClient zk客户端
      * @throws Exception
