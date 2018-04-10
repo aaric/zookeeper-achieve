@@ -1,14 +1,12 @@
 package com.github.aaric.zookeeper.strategy;
 
-import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Calendar;
+import java.text.MessageFormat;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -71,14 +69,17 @@ public class TimesliceTransferStrategy implements TransferStrategy {
             zkClient.createPersistent(ZK_PATH_T_NODE_LIST, true);
         }
 
+        /*zkClient.writeData(ZK_PATH_T_NEXT, "" + 0);
+        zkClient.writeData(ZK_PATH_T_MAX, "0" + 60 * 60 * 24);*/
+
         // 2.初始化next节点数据(记录执行同步点)
         if (!zkClient.exists(ZK_PATH_T_NEXT)) {
-            zkClient.create(ZK_PATH_T_NEXT, 0, CreateMode.PERSISTENT);
+            zkClient.create(ZK_PATH_T_NEXT, String.valueOf(0), CreateMode.PERSISTENT);
         }
 
         // 3.初始化max节点数据(记录最新同步点)
         if (!zkClient.exists(ZK_PATH_T_MAX)) {
-            zkClient.create(ZK_PATH_T_MAX, 60 * 60 * 24, CreateMode.PERSISTENT);
+            zkClient.create(ZK_PATH_T_MAX, String.valueOf(60 * 60 * 24), CreateMode.PERSISTENT);
         }
 
         // 4.获得服务器节点序号
@@ -87,46 +88,50 @@ public class TimesliceTransferStrategy implements TransferStrategy {
         logger.info("My Server SEQ: {}", SERVER_SEQ);
 
         // 5.监控node_list节点状态
-        zkClient.subscribeChildChanges(ZK_PATH_T_NODE_LIST, new IZkChildListener() {
+        zkClient.subscribeChildChanges(ZK_PATH_T_NODE_LIST, (parentPath, currentChilds) -> {
+            if (null != currentChilds && 0 != currentChilds.size()) {
+                // 5.1 节点排序
+                Collections.sort(currentChilds);
 
-            @Override
-            public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
-                if (null != currentChilds && 0 != currentChilds.size()) {
-                    // 5.1 节点排序
-                    Collections.sort(currentChilds);
-
-                    // 5.2 如果本地SEQ最小，则激活状态"active"
-                    String minServerName = currentChilds.get(0);
-                    long minSEQ = Long.parseLong(minServerName.replace(ZK_PATH_T_SERVER, ""));
-                    if (SERVER_SEQ == minSEQ) {
-                        SERVER_ACTIVE = true;
-                    } else {
-                        SERVER_ACTIVE = false;
-                    }
+                // 5.2 如果本地SEQ最小，则激活状态"active"
+                String minServerName = currentChilds.get(0);
+                long minSEQ = Long.parseLong(minServerName.replace(ZK_PATH_T_SERVER, ""));
+                if (SERVER_SEQ == minSEQ) {
+                    SERVER_ACTIVE = true;
+                } else {
+                    SERVER_ACTIVE = false;
                 }
+
+                // TODO
             }
         });
 
         // 6.定时调度
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         scheduledExecutorService.scheduleAtFixedRate(() -> {
-            if (SERVER_ACTIVE) {
-                /**
-                 * 模拟数据转存流程
-                 */
-                // 6.1 更新max节点数据
-                long max = zkClient.readData(ZK_PATH_T_MAX);
-                zkClient.writeData(ZK_PATH_T_MAX, ++max);
-                logger.info("max: {}", max);
+            System.err.println("#############");
+            // 6.1 查询max节点和next节点数据
+            long max = Long.parseLong(zkClient.readData(ZK_PATH_T_MAX));
+            long next = Long.parseLong(zkClient.readData(ZK_PATH_T_NEXT));
+            logger.info("Max: {}, Next: {}", max, next);
 
-                // 6.2 获取next节点数据
-                long next = zkClient.readData(ZK_PATH_T_NEXT);
-                System.out.println(next);
+            // 6.2 模拟数据转存流程
+            if (SERVER_ACTIVE && next < max) {
+                // 获得转存时间片数据
+                long current = next;
+                logger.info("Current: {}", current);
 
+                // 设置下一个转存时间片数据
+                /*zkClient.writeData(ZK_PATH_T_MAX, String.valueOf(++next));
+                System.out.println(Calendar.getInstance().getTimeInMillis());*/
 
-                System.out.println(Calendar.getInstance().getTimeInMillis());
+                // 释放锁
+                System.out.println(MessageFormat.format("{0,number,0000000000}", SERVER_SEQ));
+
+                System.err.println("-------------");
             }
-        }, 0, 1000, TimeUnit.MILLISECONDS);
+
+        }, 0, 1, TimeUnit.SECONDS);
 
     }
 }
