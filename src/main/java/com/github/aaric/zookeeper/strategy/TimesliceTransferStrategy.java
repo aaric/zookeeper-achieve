@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -69,9 +70,6 @@ public class TimesliceTransferStrategy implements TransferStrategy {
             zkClient.createPersistent(ZK_PATH_T_NODE_LIST, true);
         }
 
-        /*zkClient.writeData(ZK_PATH_T_NEXT, "" + 0);
-        zkClient.writeData(ZK_PATH_T_MAX, "0" + 60 * 60 * 24);*/
-
         // 2.初始化next节点数据(记录执行同步点)
         if (!zkClient.exists(ZK_PATH_T_NEXT)) {
             zkClient.create(ZK_PATH_T_NEXT, String.valueOf(0), CreateMode.PERSISTENT);
@@ -85,15 +83,29 @@ public class TimesliceTransferStrategy implements TransferStrategy {
         // 4.获得服务器节点序号
         String zkSeverPath = zkClient.createEphemeralSequential(ZK_PATH_T_NODE_SERVER, null);
         SERVER_SEQ = Long.parseLong(zkSeverPath.replace(ZK_PATH_T_NODE_SERVER, ""));
-        logger.info("My Server SEQ: {}", SERVER_SEQ);
+        logger.info("Server SEQ: {}", SERVER_SEQ);
 
-        // 5.监控node_list节点状态
+        // 5.比较最小节点，判断是否拿到锁
+        List<String> childPaths = zkClient.getChildren(ZK_PATH_T_NODE_LIST);
+        if (null != childPaths && 0 != childPaths.size()) {
+            Collections.sort(childPaths);
+            String minServerName = childPaths.get(0);
+            long minSEQ = Long.parseLong(minServerName.replace(ZK_PATH_T_SERVER, ""));
+            if (SERVER_SEQ == minSEQ) {
+                SERVER_ACTIVE = true;
+            } else {
+                SERVER_ACTIVE = false;
+            }
+        }
+        logger.info("Server Active: {}", SERVER_ACTIVE);
+
+        // 6.监控node_list节点状态
         zkClient.subscribeChildChanges(ZK_PATH_T_NODE_LIST, (parentPath, currentChilds) -> {
             if (null != currentChilds && 0 != currentChilds.size()) {
-                // 5.1 节点排序
+                // 6.1 节点排序
                 Collections.sort(currentChilds);
 
-                // 5.2 如果本地SEQ最小，则激活状态"active"
+                // 6.2 如果本地SEQ最小，则激活状态"active"
                 String minServerName = currentChilds.get(0);
                 long minSEQ = Long.parseLong(minServerName.replace(ZK_PATH_T_SERVER, ""));
                 if (SERVER_SEQ == minSEQ) {
@@ -101,33 +113,38 @@ public class TimesliceTransferStrategy implements TransferStrategy {
                 } else {
                     SERVER_ACTIVE = false;
                 }
-
-                // TODO
+                logger.info("Server Active: {}", SERVER_ACTIVE);
             }
         });
 
-        // 6.定时调度
+        // 7.定时调度
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             System.err.println("#############");
-            // 6.1 查询max节点和next节点数据
+            // 7.1 查询max节点和next节点数据
             long max = Long.parseLong(zkClient.readData(ZK_PATH_T_MAX));
             long next = Long.parseLong(zkClient.readData(ZK_PATH_T_NEXT));
             logger.info("Max: {}, Next: {}", max, next);
 
-            // 6.2 模拟数据转存流程
+            // 7.2 模拟数据转存流程
             if (SERVER_ACTIVE && next < max) {
-                // 获得转存时间片数据
+                // 设置转存时间片数据
                 long current = next;
-                logger.info("Current: {}", current);
 
                 // 设置下一个转存时间片数据
-                /*zkClient.writeData(ZK_PATH_T_MAX, String.valueOf(++next));
-                System.out.println(Calendar.getInstance().getTimeInMillis());*/
+                zkClient.writeData(ZK_PATH_T_NEXT, String.valueOf(++next));
 
                 // 释放锁
-                System.out.println(MessageFormat.format("{0,number,0000000000}", SERVER_SEQ));
+                String zkEphemeralPath = MessageFormat.format(ZK_PATH_T_NODE_SERVER + "{0,number,0000000000}", SERVER_SEQ);
+                zkClient.delete(zkEphemeralPath);
 
+                // 获得服务器节点序号
+                zkEphemeralPath = zkClient.createEphemeralSequential(ZK_PATH_T_NODE_SERVER, null);
+                SERVER_SEQ = Long.parseLong(zkEphemeralPath.replace(ZK_PATH_T_NODE_SERVER, ""));
+                logger.info("Server SEQ: {}", SERVER_SEQ);
+
+                // 模拟转存数据
+                logger.info("----------------->: {}", current);
                 System.err.println("-------------");
             }
 
