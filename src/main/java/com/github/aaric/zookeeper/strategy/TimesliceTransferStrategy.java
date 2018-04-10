@@ -120,13 +120,24 @@ public class TimesliceTransferStrategy implements TransferStrategy {
         // 7.定时调度
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         scheduledExecutorService.scheduleAtFixedRate(() -> {
+            // 设置最新同步点数据
+            if (SERVER_ACTIVE) {
+                long max = Long.parseLong(zkClient.readData(ZK_PATH_T_MAX));
+                max += 1; // 模拟每次加1k
+                zkClient.writeData(ZK_PATH_T_MAX, String.valueOf(max));
+            }
+
+        }, 0, 1, TimeUnit.SECONDS);
+
+        // 8.模拟转存数据
+        while (true) {
             System.err.println("#############");
-            // 7.1 查询max节点和next节点数据
+            // 8.1 查询max节点和next节点数据
             long max = Long.parseLong(zkClient.readData(ZK_PATH_T_MAX));
             long next = Long.parseLong(zkClient.readData(ZK_PATH_T_NEXT));
             logger.info("Max: {}, Next: {}", max, next);
 
-            // 7.2 模拟数据转存流程
+            // 8.2 模拟数据转存流程
             if (SERVER_ACTIVE && next < max) {
                 // 设置转存时间片数据
                 long current = next;
@@ -138,17 +149,17 @@ public class TimesliceTransferStrategy implements TransferStrategy {
                 String zkEphemeralPath = MessageFormat.format(ZK_PATH_T_NODE_SERVER + "{0,number,0000000000}", SERVER_SEQ);
                 zkClient.delete(zkEphemeralPath);
 
-                // 获得服务器节点序号
+                // 模拟转存数据
+                Thread.sleep(1000);  // 假设1秒钟执行完
+                logger.info("----------------->: {}", current);
+
+                // 等待锁
                 zkEphemeralPath = zkClient.createEphemeralSequential(ZK_PATH_T_NODE_SERVER, null);
                 SERVER_SEQ = Long.parseLong(zkEphemeralPath.replace(ZK_PATH_T_NODE_SERVER, ""));
                 logger.info("Server SEQ: {}", SERVER_SEQ);
-
-                // 模拟转存数据
-                logger.info("----------------->: {}", current);
                 System.err.println("-------------");
             }
-
-        }, 0, 1, TimeUnit.SECONDS);
+        }
 
     }
 }
