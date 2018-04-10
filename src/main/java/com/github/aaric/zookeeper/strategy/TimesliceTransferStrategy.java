@@ -23,7 +23,7 @@ public class TimesliceTransferStrategy implements TransferStrategy {
     /**
      * Logger
      */
-    private static final Logger logger = LoggerFactory.getLogger(TimesliceTransferStrategy.class);
+    private static final Logger logger = LoggerFactory.getLogger(TransferStrategy.class);
 
     /**
      * transfer服务器信息
@@ -42,12 +42,12 @@ public class TimesliceTransferStrategy implements TransferStrategy {
      * ------------server-0000000001<br>
      * ------------server-0000000002<br>
      */
-    private static final String ZK_PATH_T_WORK = "/rooster/transfer/gmmc";
+    public static final String ZK_PATH_T_WORK = "/rooster/transfer/gmmc";
     public static final String ZK_PATH_T_NEXT = ZK_PATH_T_WORK + "/next";
     public static final String ZK_PATH_T_MAX = ZK_PATH_T_WORK + "/max";
-    private static final String ZK_PATH_T_NODE_LIST = ZK_PATH_T_WORK + "/node_list";
-    private static final String ZK_PATH_T_SERVER = "server-";
-    private static final String ZK_PATH_T_NODE_SERVER = ZK_PATH_T_NODE_LIST + "/" + ZK_PATH_T_SERVER;
+    public static final String ZK_PATH_T_NODE_LIST = ZK_PATH_T_WORK + "/node_list";
+    public static final String ZK_PATH_T_SERVER = "server-";
+    public static final String ZK_PATH_T_NODE_SERVER = ZK_PATH_T_NODE_LIST + "/" + ZK_PATH_T_SERVER;
 
     /**
      * zk客户端
